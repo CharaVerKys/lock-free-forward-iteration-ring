@@ -2,7 +2,7 @@
 #define RINGQUEUE_H
 #include <vector>
 #include <cassert>
-#include <QMutex>
+#include <std::mutex>
 
 template <typename T>
 class Ring
@@ -12,7 +12,7 @@ public:
     using iter = typename std::vector<T>::iterator;
 
     explicit Ring(std::size_t size)
-        : mutex_ifOfBegin(new QMutex())
+        : mutex_ifOfBegin(new std::mutex())
         , m_size(size)
         , m_usedSize(0)
         , m_vector(std::vector<T>(m_size*2))
@@ -104,7 +104,7 @@ public:
       }*/
 
 private:
-    QMutex* mutex_ifOfBegin;
+    std::mutex* mutex_ifOfBegin;
     std::size_t m_size;
     std::size_t m_usedSize;
     typename std::vector<T>::iterator m_itOfBegin;
