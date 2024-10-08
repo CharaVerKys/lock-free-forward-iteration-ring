@@ -12,7 +12,7 @@ public:
     using iter = typename std::vector<T>::iterator;
 
     explicit Ring(std::size_t size)
-        : mutex_ifOfBegin(new std::mutex())
+        : mutex_itOfBegin(new std::mutex())
         , m_size(size)
         , m_usedSize(0)
         , m_vector(std::vector<T>(m_size*2))
@@ -21,7 +21,7 @@ public:
         m_itOfEnd = m_itOfBegin;
     }
     ~Ring(){
-        if(mutex_ifOfBegin){delete mutex_ifOfBegin;}
+        if(mutex_itOfBegin){delete mutex_itOfBegin;}
     }
 
     const std::size_t& size(){
@@ -35,12 +35,12 @@ public:
         if(m_usedSize != m_size){
             ++m_usedSize;
         }else{ // if shift
-            mutex_ifOfBegin->lock();
+            mutex_itOfBegin->lock();
                 ++m_itOfBegin;
                 if(m_itOfBegin == m_vector.end()){
                     m_itOfBegin = m_vector.begin();
                 }
-            mutex_ifOfBegin->unlock();
+            mutex_itOfBegin->unlock();
         }
         *m_itOfEnd = value;
         ++m_itOfEnd;
@@ -53,12 +53,12 @@ public:
         if(m_usedSize != m_size){
             ++m_usedSize;
         }else{ // if shift
-            mutex_ifOfBegin->lock();
+            mutex_itOfBegin->lock();
                 ++m_itOfBegin;
                 if(m_itOfBegin == m_vector.end()){
                     m_itOfBegin = m_vector.begin();
                 }
-            mutex_ifOfBegin->unlock();
+            mutex_itOfBegin->unlock();
         }
         *m_itOfEnd = std::move(value);
         ++m_itOfEnd;
@@ -73,12 +73,12 @@ public:
         m_usedSize = 0;
     }
 
-    template<class func> // only template work with lamda here // even std::function (without template) not work
-    void forwartIterationThoughRing(func fnc, std::size_t size){
+    template<class func> // only template work with lambda here // even std::function (without template) not work
+    void forwardIterationThoughRing(func fnc, std::size_t size){
 
-        mutex_ifOfBegin->lock();
+        mutex_itOfBegin->lock();
             typename std::vector<T>::iterator it = m_itOfBegin;
-        mutex_ifOfBegin->unlock();
+        mutex_itOfBegin->unlock();
 
         if(it + size-1 < m_vector.end()){
             it += size-1;
@@ -98,105 +98,12 @@ public:
             --it;
         }
     }
-
-/*    iterator begin(){
-
-      }*/
-
+    
 private:
-    std::mutex* mutex_ifOfBegin;
+    std::mutex* mutex_itOfBegin;
     std::size_t m_size;
     std::size_t m_usedSize;
     typename std::vector<T>::iterator m_itOfBegin;
     typename std::vector<T>::iterator m_itOfEnd;
     typename std::vector<T> m_vector;
-
-public:
-  /*
-   * its template (of forward iterator)
-    class iterator{
-    public:
-        using iterator_category= std::forward_iterator_tag;
-        using value_type= T;
-        using difference_type= std::ptrdiff_t;
-        using pointer= T*;
-        using reference = T&;
-
-        iterator(pointer ptr = nullptr): m_ptr(ptr){}
-
-        reference operator*() const {return *m_ptr;}
-        pointer operator->() const {return m_ptr;}
-
-        iterator& operator++(){ ++m_ptr; return *this;}
-        iterator  operator++(int){iterator iter = *this; ++m_ptr; return iter;}
-
-        bool operator==(const iterator& other) const {return m_ptr == other.m_ptr;}
-        bool operator!=(const iterator& other) const {return m_ptr != other.m_ptr;}
-    private:
-        pointer m_ptr;
-    };*/
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#ifdef obsolete
-template <typename T>
-class RingQueueObsolete : public std::list<T>// переопределены только push_front фунции
-{
-public:
-
-RingQueueObsolete(int limit)
-    : std::list<T>()
-    , limit(limit)
-{}
-
-void push_front(const T& value) {
-    if (std::list<T>::size() == limit) {
-        std::list<T>::pop_back();
-    }
-    std::list<T>::push_front(value);
-}
-
-void push_front(T&& value) {
-    if (std::list<T>::size() == limit) {
-        std::list<T>::pop_back();
-    }
-    std::list<T>::push_front(std::move(value));
-}
-
-void push_back(const T&) {
-    assert(false && "use push_front instead");
-}
-
-void push_back(T&&) {
-    assert(false && "use push_front instead");
-}
-
-private:
-    unsigned int limit;
-};
-#endif // obsolete
-#endif // RINGQUEUE_H
